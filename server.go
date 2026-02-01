@@ -18,7 +18,7 @@ type ListAccountsOutput struct {
 }
 
 type ListCalendarsInput struct {
-	Account string `json:"account,omitempty" jsonschema:"description=Account name (optional - if empty, lists from all accounts)"`
+	Account string `json:"account,omitempty" jsonschema:"description:Account name (optional - if empty lists from all accounts)"`
 }
 
 type Calendar struct {
@@ -34,12 +34,12 @@ type ListCalendarsOutput struct {
 }
 
 type ListEventsInput struct {
-	Account    string `json:"account,omitempty" jsonschema:"description=Account name (optional - if empty, queries all accounts)"`
-	CalendarID string `json:"calendar_id,omitempty" jsonschema:"description=Calendar ID (optional - if empty, uses primary calendar)"`
-	TimeMin    string `json:"time_min,omitempty" jsonschema:"description=Start of time range (RFC3339 format, e.g., 2026-02-01T00:00:00Z). Defaults to now."`
-	TimeMax    string `json:"time_max,omitempty" jsonschema:"description=End of time range (RFC3339 format). Defaults to 7 days from now."`
-	MaxResults int    `json:"max_results,omitempty" jsonschema:"description=Maximum number of events to return (default 50, max 250)"`
-	Query      string `json:"query,omitempty" jsonschema:"description=Free text search query"`
+	Account    string `json:"account,omitempty" jsonschema:"description:Account name (optional - if empty queries all accounts)"`
+	CalendarID string `json:"calendar_id,omitempty" jsonschema:"description:Calendar ID (optional - if empty uses primary calendar)"`
+	TimeMin    string `json:"time_min,omitempty" jsonschema:"description:Start of time range (RFC3339 format). Defaults to now."`
+	TimeMax    string `json:"time_max,omitempty" jsonschema:"description:End of time range (RFC3339 format). Defaults to 7 days from now."`
+	MaxResults int    `json:"max_results,omitempty" jsonschema:"description:Maximum number of events to return (default 50 max 250)"`
+	Query      string `json:"query,omitempty" jsonschema:"description:Free text search query"`
 }
 
 type Event struct {
@@ -63,9 +63,9 @@ type ListEventsOutput struct {
 }
 
 type GetEventInput struct {
-	Account    string `json:"account" jsonschema:"description=Account name,required"`
-	CalendarID string `json:"calendar_id" jsonschema:"description=Calendar ID,required"`
-	EventID    string `json:"event_id" jsonschema:"description=Event ID,required"`
+	Account    string `json:"account" jsonschema:"description:Account name,required"`
+	CalendarID string `json:"calendar_id" jsonschema:"description:Calendar ID,required"`
+	EventID    string `json:"event_id" jsonschema:"description:Event ID,required"`
 }
 
 type GetEventOutput struct {
@@ -73,10 +73,10 @@ type GetEventOutput struct {
 }
 
 type CheckAvailabilityInput struct {
-	Account    string   `json:"account,omitempty" jsonschema:"description=Account name (optional - if empty, checks all accounts)"`
-	Calendars  []string `json:"calendars,omitempty" jsonschema:"description=List of calendar IDs to check (optional - if empty, uses primary)"`
-	TimeMin    string   `json:"time_min" jsonschema:"description=Start of time range (RFC3339 format),required"`
-	TimeMax    string   `json:"time_max" jsonschema:"description=End of time range (RFC3339 format),required"`
+	Account    string   `json:"account,omitempty" jsonschema:"description:Account name (optional - if empty checks all accounts)"`
+	Calendars  []string `json:"calendars,omitempty" jsonschema:"description:List of calendar IDs to check (optional - if empty uses primary)"`
+	TimeMin    string   `json:"time_min" jsonschema:"description:Start of time range (RFC3339 format),required"`
+	TimeMax    string   `json:"time_max" jsonschema:"description:End of time range (RFC3339 format),required"`
 }
 
 type BusyPeriod struct {
@@ -133,6 +133,11 @@ func handleListAccounts(ctx context.Context, req *mcp.CallToolRequest, input Lis
 		return nil, ListAccountsOutput{}, fmt.Errorf("failed to list accounts: %w", err)
 	}
 
+	// Ensure we return an empty array, not null
+	if accounts == nil {
+		accounts = []string{}
+	}
+
 	output := ListAccountsOutput{Accounts: accounts}
 	return &mcp.CallToolResult{
 		Content: []mcp.Content{
@@ -145,6 +150,11 @@ func handleListCalendars(ctx context.Context, req *mcp.CallToolRequest, input Li
 	calendars, err := GetCalendars(ctx, input.Account)
 	if err != nil {
 		return nil, ListCalendarsOutput{}, fmt.Errorf("failed to list calendars: %w", err)
+	}
+
+	// Ensure we return an empty array, not null
+	if calendars == nil {
+		calendars = []Calendar{}
 	}
 
 	output := ListCalendarsOutput{Calendars: calendars}
@@ -169,6 +179,11 @@ func handleListEvents(ctx context.Context, req *mcp.CallToolRequest, input ListE
 	events, err := GetEvents(ctx, input)
 	if err != nil {
 		return nil, ListEventsOutput{}, fmt.Errorf("failed to list events: %w", err)
+	}
+
+	// Ensure we return an empty array, not null
+	if events == nil {
+		events = []Event{}
 	}
 
 	output := ListEventsOutput{Events: events}
@@ -221,6 +236,11 @@ func handleCheckAvailability(ctx context.Context, req *mcp.CallToolRequest, inpu
 	busyPeriods, err := CheckAvailability(ctx, input)
 	if err != nil {
 		return nil, CheckAvailabilityOutput{}, fmt.Errorf("failed to check availability: %w", err)
+	}
+
+	// Ensure we return an empty array, not null
+	if busyPeriods == nil {
+		busyPeriods = []BusyPeriod{}
 	}
 
 	output := CheckAvailabilityOutput{BusyPeriods: busyPeriods}
