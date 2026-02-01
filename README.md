@@ -51,7 +51,7 @@ Add to your `~/.claude/settings.json`:
 {
   "mcpServers": {
     "gcal-readonly": {
-      "command": "/Users/geraldcroes/workspace/geraldcroes/gcal-readonly-mcp/gcal-readonly-mcp"
+      "command": "/path-to/gcal-readonly-mcp"
     }
   }
 }
